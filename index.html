@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cute Studio Photobooth 📸✨</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        studio: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="text-slate-800 antialiased selection:bg-rose-200">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Navigation Header -->
+    <header class="glass-panel sticky top-0 z-30 px-4 py-2 sm:px-6 border-b border-rose-100/60 shadow-sm">
+        <div class="max-w-[1500px] mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div
+                    class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-400 flex items-center justify-center text-white text-base sm:text-lg shadow-md shadow-rose-200">
+                    📸
+                </div>
+                <div>
+                    <h1
+                        class="text-base sm:text-lg font-extrabold tracking-tight bg-gradient-to-r from-rose-600 to-pink-500 bg-clip-text text-transparent leading-tight">
+                        STUDIO PHOTOBOOTH
+                    </h1>
+                    <p class="text-[10px] sm:text-[11px] font-medium text-slate-500 -mt-0.5">Korean & Modern Self-Photo
+                        Studio</p>
+                </div>
+            </div>
+
+            <!-- Header Quick Controls -->
+            <div class="flex items-center gap-2">
+                <!-- Camera Select -->
+                <div
+                    class="hidden sm:flex items-center bg-white/80 border border-slate-200 rounded-xl px-2.5 py-1 text-xs">
+                    <span class="mr-1.5 text-slate-400">📹</span>
+                    <select id="cameraSelect"
+                        class="bg-transparent outline-none text-slate-700 cursor-pointer max-w-[180px] truncate">
+                        <option value="">Memuat kamera...</option>
+                    </select>
+                </div>
+
+                <!-- Mirror Toggle -->
+                <button id="btnToggleMirror"
+                    class="px-2.5 py-1.5 rounded-xl bg-white/80 border border-slate-200 hover:bg-rose-50 text-slate-700 text-xs font-semibold transition shadow-sm flex items-center gap-1"
+                    title="Toggle Mirror / Cermin">
+                    <span>🪞</span> <span class="hidden sm:inline">Cermin</span>
+                </button>
+
+                <!-- Grid Guide -->
+                <button id="btnToggleGrid"
+                    class="px-2.5 py-1.5 rounded-xl bg-white/80 border border-slate-200 hover:bg-rose-50 text-slate-700 text-xs font-semibold transition shadow-sm flex items-center gap-1"
+                    title="Panduan Grid Garis">
+                    <span>📐</span> <span class="hidden sm:inline">Grid</span>
+                </button>
+
+                <!-- Sound Toggle -->
+                <button id="btnToggleSound"
+                    class="w-8 h-8 rounded-xl bg-white/80 border border-slate-200 hover:bg-rose-50 text-slate-700 text-sm flex items-center justify-center transition shadow-sm"
+                    title="Suara Shutter & Timer">
+                    🔊
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Studio Layout (Optimized for Laptop Screens & Desktops) -->
+    <main class="max-w-[1500px] mx-auto p-2 sm:p-3 lg:p-3 lg:h-[calc(100vh-58px)] lg:overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-start lg:h-full">
+
+            <!-- LEFT COLUMN: Camera & Shooting Controls (7 cols) -->
+            <div class="lg:col-span-7 space-y-2.5 lg:h-full lg:overflow-y-auto lg:pr-2 custom-scroll">
+
+                <!-- Viewfinder Box (True 16:9 ratio, no stretching/gepeng, full camera width preserved) -->
+                <div
+                    class="viewfinder-box relative aspect-video w-full max-w-[500px] max-h-[285px] bg-slate-900 border-2 sm:border-4 border-white shadow-xl mx-auto flex items-center justify-center overflow-hidden">
+                    <video id="cameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+
+                    <!-- AR Face Tracking Hearts Layer -->
+                    <canvas id="arCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-10"
+                        style="display: none;"></canvas>
+
+                    <!-- Flash Effect Layer -->
+                    <div id="cameraFlash" class="camera-flash"></div>
+
+                    <!-- Countdown Layer -->
+                    <div id="countdownOverlay" class="countdown-overlay hidden">
+                        <div id="countdownNumber" class="countdown-number">3</div>
+                    </div>
+
+                    <!-- Rule of Thirds Grid -->
+                    <div id="gridGuide" class="studio-grid-guide" style="display: none;">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+
+                    <!-- Shot Sequence Progress Badge -->
+                    <div id="shotProgressBadge"
+                        class="absolute top-3 left-3 z-20 bg-rose-600/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-2 hidden">
+                        <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                        <span id="shotProgressText">Foto 1 dari 4</span>
+                    </div>
+
+                    <!-- Watermark in live preview -->
+                    <div
+                        class="absolute bottom-2.5 right-3 text-white/50 text-[9px] tracking-widest font-mono pointer-events-none">
+                        LIVE STUDIO HD
+                    </div>
+                </div>
+
+                <!-- Filter Presets (Horizontal Scrollable) -->
+                <div class="glass-panel p-2.5 sm:p-3 rounded-2xl">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span
+                            class="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                            ✨ Filter Estetik Studio
+                        </span>
+                    </div>
+                    <div class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                        <button
+                            class="filter-btn filter-chip active px-3 py-1 rounded-xl border border-slate-200 text-xs font-semibold whitespace-nowrap bg-white text-slate-700"
+                            data-filter="soft-glow">
+                            Soft Glow ✨
+                        </button>
+                        <button
+                            class="filter-btn filter-chip px-3 py-1 rounded-xl border border-slate-200 text-xs font-semibold whitespace-nowrap bg-white text-slate-700 flex items-center gap-1"
+                            data-filter="pink-love">
+                            <span>Pink Love 💕</span> <span
+                                class="text-[9px] bg-pink-100 text-pink-600 px-1 rounded font-bold">AR</span>
+                        </button>
+                        <button
+                            class="filter-btn filter-chip px-3 py-1 rounded-xl border border-slate-200 text-xs font-semibold whitespace-nowrap bg-white text-slate-700"
+                            data-filter="normal">
+                            Natural
+                        </button>
+                        <button
+                            class="filter-btn filter-chip px-3 py-1 rounded-xl border border-slate-200 text-xs font-semibold whitespace-nowrap bg-white text-slate-700"
+                            data-filter="warm-film">
+                            Warm Film 🎞️
+                        </button>
+                        <button
+                            class="filter-btn filter-chip px-3 py-1 rounded-xl border border-slate-200 text-xs font-semibold whitespace-nowrap bg-white text-slate-700"
+                            data-filter="classic-bw">
+                            Classic B&W 🖤
+                        </button>
+                        <button
+                            class="filter-btn filter-chip px-3 py-1 rounded-xl border border-slate-200 text-xs font-semibold whitespace-nowrap bg-white text-slate-700"
+                            data-filter="vintage-rose">
+                            Rosy Pastel 🌸
+                        </button>
+                        <button
+                            class="filter-btn filter-chip px-3 py-1 rounded-xl border border-slate-200 text-xs font-semibold whitespace-nowrap bg-white text-slate-700"
+                            data-filter="y2k-cool">
+                            Y2K Dream 🪩
+                        </button>
+                        <button
+                            class="filter-btn filter-chip px-3 py-1 rounded-xl border border-slate-200 text-xs font-semibold whitespace-nowrap bg-white text-slate-700"
+                            data-filter="moody-noir">
+                            Moody Noir 🎬
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Timer & Layout Selector & Trigger Buttons -->
+                <div class="glass-panel p-3 sm:p-4 rounded-2xl space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Timer Selection -->
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">⏱️
+                                Hitung Mundur</label>
+                            <div class="flex gap-1.5">
+                                <button
+                                    class="timer-btn flex-1 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-rose-500 text-white transition"
+                                    data-time="3">3 Detik</button>
+                                <button
+                                    class="timer-btn flex-1 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 transition"
+                                    data-time="5">5 Detik</button>
+                                <button
+                                    class="timer-btn flex-1 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 transition"
+                                    data-time="10">10 Detik</button>
+                            </div>
+                        </div>
+
+                        <!-- Layout Selection (Including Story 9:16 1080x1920 with 4 photos) -->
+                        <div>
+                            <label
+                                class="block text-[11px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">🎞️
+                                Format Strip</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                                <button
+                                    class="layout-btn active py-1.5 px-1.5 rounded-xl text-[11px] font-bold border border-rose-500 bg-white text-slate-800 transition text-center"
+                                    data-layout="strip-4" data-photos="4">
+                                    Strip 4-Cut
+                                </button>
+                                <button
+                                    class="layout-btn py-1.5 px-1.5 rounded-xl text-[11px] font-bold border border-slate-200 bg-white text-slate-800 transition text-center flex items-center justify-center gap-1"
+                                    data-layout="story-9-16" data-photos="4"
+                                    title="Rasio 9:16 Resolusi 1080x1920 px (4 Foto)">
+                                    <span>Story 9:16</span> <span
+                                        class="text-[9px] bg-rose-100 text-rose-600 px-1 py-0.2 rounded font-semibold">HD</span>
+                                </button>
+                                <button
+                                    class="layout-btn py-1.5 px-1.5 rounded-xl text-[11px] font-bold border border-slate-200 bg-white text-slate-800 transition text-center"
+                                    data-layout="double-strip-4" data-photos="4">
+                                    Double (2x4)
+                                </button>
+                                <button
+                                    class="layout-btn py-1.5 px-1.5 rounded-xl text-[11px] font-bold border border-slate-200 bg-white text-slate-800 transition text-center"
+                                    data-layout="grid-4" data-photos="4">
+                                    Grid 2x2
+                                </button>
+                                <button
+                                    class="layout-btn py-1.5 px-1.5 rounded-xl text-[11px] font-bold border border-slate-200 bg-white text-slate-800 transition text-center"
+                                    data-layout="grid-6" data-photos="6">
+                                    Grid 6-Cut
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Big Capture Buttons -->
+                    <div class="pt-1 flex flex-col sm:flex-row gap-2.5">
+                        <button id="btnStartShoot"
+                            class="btn-cute flex-1 py-2.5 sm:py-3 px-5 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-rose-200 flex items-center justify-center gap-2">
+                            <span>📸</span> Mulai Foto Otomatis (4 Pose)
+                        </button>
+                        <button id="btnSingleSnap"
+                            class="btn-cute py-2.5 sm:py-3 px-4 rounded-2xl bg-slate-900 text-white font-bold text-xs sm:text-sm shadow-md flex items-center justify-center gap-1.5">
+                            <span>📷</span> Foto 1x
+                        </button>
+                    </div>
+
+                    <!-- Captured Slot Thumbnails -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Hasil
+                                Jepretan</span>
+                            <button id="btnRetakeAll"
+                                class="text-xs text-rose-600 hover:text-rose-700 font-bold hover:underline">
+                                Reset Semua
+                            </button>
+                        </div>
+                        <div id="photoSlotsContainer" class="grid grid-cols-4 gap-2">
+                            <!-- Filled dynamically in app.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent History Gallery Drawer -->
+                <div class="glass-panel p-3 rounded-2xl">
+                    <span class="text-[11px] font-bold text-slate-600 uppercase tracking-wider block mb-2">
+                        📁 Riwayat Foto Hari Ini
+                    </span>
+                    <div id="historyContainer" class="grid grid-cols-4 gap-2.5">
+                        <!-- History items -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Strip Preview & Decorator (5 cols) -->
+            <div class="lg:col-span-5 space-y-2.5 lg:h-full lg:overflow-y-auto lg:pr-2 custom-scroll">
+
+                <!-- The Photobooth Strip Canvas Container -->
+                <div class="glass-panel p-3.5 sm:p-4 rounded-3xl flex flex-col items-center">
+                    <div class="w-full flex items-center justify-between mb-2">
+                        <h2 class="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                            🖨️ Pratinjau Cetak Strip
+                        </h2>
+                        <span class="text-[10px] text-slate-400">Geser stiker di atas strip untuk atur posisi!</span>
+                    </div>
+
+                    <!-- Canvas Wrapper (Restrained max-height for laptop viewing) -->
+                    <div id="stripCanvasContainer"
+                        class="w-full flex justify-center py-2 bg-slate-100/70 rounded-2xl border border-slate-200/80 shadow-inner overflow-hidden">
+                        <div class="strip-canvas-wrapper relative drop-shadow-xl max-w-full">
+                            <canvas id="stripCanvas" class="max-h-[38vh] sm:max-h-[340px] w-auto rounded-lg"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Export Action Buttons -->
+                    <div class="w-full grid grid-cols-3 gap-2 mt-3">
+                        <button id="btnDownload"
+                            class="btn-cute py-2 px-2.5 rounded-xl bg-rose-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-rose-200">
+                            <span>💾</span> Unduh HD
+                        </button>
+                        <button id="btnPrint"
+                            class="btn-cute py-2 px-2.5 rounded-xl bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md">
+                            <span>🖨️</span> Cetak / Print
+                        </button>
+                        <button id="btnCopy"
+                            class="btn-cute py-2 px-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-50 shadow-sm">
+                            <span>📋</span> Salin
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Customization Drawer: Frame Colors, Text & Stickers -->
+                <div class="glass-panel p-3.5 sm:p-4 rounded-2xl space-y-3.5">
+
+                    <!-- Frame Color Palette -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">🎨
+                            Warna Bingkai</label>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <button class="color-circle active bg-white shadow-sm border-slate-300" data-theme="white"
+                                title="Pure White"></button>
+                            <button class="color-circle bg-zinc-900 shadow-sm" data-theme="black"
+                                title="Chic Noir"></button>
+                            <button class="color-circle bg-rose-100 shadow-sm" data-theme="pink"
+                                title="Pastel Rosé"></button>
+                            <button class="color-circle bg-sky-100 shadow-sm" data-theme="blue"
+                                title="Baby Cloud"></button>
+                            <button class="color-circle bg-emerald-100 shadow-sm" data-theme="sage"
+                                title="Matcha Sage"></button>
+                            <button class="color-circle bg-amber-100 shadow-sm" data-theme="butter"
+                                title="Sweet Butter"></button>
+                            <button class="color-circle bg-purple-100 shadow-sm" data-theme="lavender"
+                                title="Lavender Mist"></button>
+                            <button class="color-circle bg-[#f7f2ea] shadow-sm" data-theme="retro-beige"
+                                title="Vintage Paper"></button>
+                            <button class="color-circle bg-gradient-to-r from-pink-200 to-blue-200 shadow-sm"
+                                data-theme="gradient" title="Sunset Dream"></button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Text on Strip -->
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Judul Atas</label>
+                            <input type="text" id="inputTitle" value="MANTRA PEEPS"
+                                class="w-full px-2.5 py-1 text-xs rounded-xl border border-slate-200 focus:outline-rose-500 font-semibold bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Subjudul Bawah</label>
+                            <input type="text" id="inputSubtitle" value="TIMOHO REGION"
+                                class="w-full px-2.5 py-1 text-xs rounded-xl border border-slate-200 focus:outline-rose-500 font-medium bg-white">
+                        </div>
+                    </div>
+
+                    <!-- Date & Barcode Options -->
+                    <div class="space-y-1.5 text-xs font-medium text-slate-700">
+                        <div class="flex items-center gap-4">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" id="chkDate" checked
+                                    class="rounded text-rose-500 focus:ring-rose-400">
+                                <span class="text-[11px]">Tampilkan Tanggal</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" id="chkBarcode" checked
+                                    class="rounded text-rose-500 focus:ring-rose-400">
+                                <span class="text-[11px]">Efek Barcode ║▌║</span>
+                            </label>
+                        </div>
+                        <div>
+                            <input type="text" id="inputDate" placeholder="Format Tanggal Custom (Kosong = Hari ini)"
+                                class="w-full px-2.5 py-1 text-[11px] rounded-xl border border-slate-200 focus:outline-rose-500 bg-white">
+                        </div>
+                    </div>
+
+                    <!-- Cute Stickers Section -->
+                    <div class="pt-2 border-t border-slate-100">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">🎀 Stiker Lucu
+                                (Klik untuk Tempel)</label>
+                            <div id="stickerTransformControls"
+                                class="flex items-center gap-1 opacity-40 pointer-events-none transition">
+                                <button id="btnScaleUpSticker"
+                                    class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold"
+                                    title="Perbesar Stiker">+</button>
+                                <button id="btnScaleDownSticker"
+                                    class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold"
+                                    title="Perkecil Stiker">-</button>
+                                <button id="btnRotateSticker"
+                                    class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold"
+                                    title="Putar Stiker">↻</button>
+                                <button id="btnDeleteSticker"
+                                    class="w-6 h-6 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold"
+                                    title="Hapus Stiker Terpilih">🗑️</button>
+                            </div>
+                        </div>
+
+                        <!-- Sticker Grid -->
+                        <div id="stickerPalette"
+                            class="grid grid-cols-7 sm:grid-cols-8 gap-1.5 max-h-28 overflow-y-auto p-1 bg-slate-50/70 rounded-xl border border-slate-100 custom-scroll">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <div class="flex justify-end mt-1.5">
+                            <button id="btnClearAllStickers"
+                                class="text-[10px] text-slate-400 hover:text-rose-500 font-medium transition">
+                                Bersihkan Semua Stiker
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer (Visible on mobile, compact on laptop) -->
+    <footer class="py-2.5 text-center text-[10px] text-slate-400 border-t border-rose-100/30 lg:hidden">
+        <p>✨ Cute Photobooth Studio Web &bull; Berjalan langsung di browser laptop &bull; Privasi aman tanpa unggah ke
+            server luar</p>
+    </footer>
+
+    <!-- MediaPipe Face Detection for Precision AR Landmarks -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"
+        crossorigin="anonymous"></script>
+
+    <!-- Scripts -->
+    <script src="js/audio.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/face-tracker.js"></script>
+    <script src="js/camera.js"></script>
+    <script src="js/stickers.js"></script>
+    <script src="js/canvas-renderer.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

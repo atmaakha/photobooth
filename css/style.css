@@ -1,0 +1,220 @@
+/* Modern Aesthetic Photo Studio Styles */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Pacifico&family=Caveat:wght@600;700&display=swap');
+
+:root {
+    --primary: #f43f5e;
+    --primary-light: #ffe4e6;
+    --primary-dark: #be123c;
+    --bg-main: #fdfaf9;
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-color: #f1e9e7;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #fdf4f5 0%, #fefcfb 50%, #f4f6fc 100%);
+    color: #1f2937;
+    min-height: 100vh;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+
+.custom-scroll::-webkit-scrollbar {
+    width: 5px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: #fecdd3;
+    border-radius: 9999px;
+}
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #f43f5e;
+}
+
+/* Glassmorphism Cards */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 10px 30px -5px rgba(225, 29, 72, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.02);
+}
+
+/* Camera Live Viewfinder */
+.viewfinder-box {
+    position: relative;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    background: #111827;
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.25);
+}
+
+/* Flash Animation */
+.camera-flash {
+    position: absolute;
+    inset: 0;
+    background-color: white;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50;
+    transition: opacity 0.05s ease-out;
+}
+.camera-flash.active {
+    opacity: 0.95;
+    transition: none;
+}
+
+/* Countdown Overlay Animation */
+.countdown-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 40;
+    pointer-events: none;
+}
+
+.countdown-number {
+    font-size: 8rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+    animation: countdownScale 0.9s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+@keyframes countdownScale {
+    0% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+    30% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    80% {
+        transform: scale(0.95);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+}
+
+/* Studio Framing Guides */
+.studio-grid-guide {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    opacity: 0.25;
+}
+.studio-grid-guide > div {
+    border: 1px dashed rgba(255, 255, 255, 0.5);
+}
+
+/* Cute Buttons */
+.btn-cute {
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.btn-cute:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -4px rgba(244, 63, 94, 0.3);
+}
+.btn-cute:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Preset Pill Selectors */
+.filter-chip {
+    transition: all 0.15s ease;
+}
+.filter-chip.active {
+    background: #f43f5e;
+    color: white;
+    border-color: #f43f5e;
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.35);
+}
+
+/* Color Palette Circles */
+.color-circle {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.color-circle:hover {
+    transform: scale(1.15);
+}
+.color-circle.active {
+    border-color: #f43f5e;
+    box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.4);
+    transform: scale(1.1);
+}
+
+/* Sticker Hover */
+.sticker-item {
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.sticker-item:hover {
+    transform: scale(1.25) rotate(6deg);
+}
+
+/* Strip Canvas Interactive Wrapper */
+.strip-canvas-wrapper {
+    touch-action: none;
+    cursor: grab;
+    transition: box-shadow 0.2s ease;
+}
+.strip-canvas-wrapper:active {
+    cursor: grabbing;
+}
+
+/* Print Styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #stripCanvasContainer, #stripCanvasContainer * {
+        visibility: visible;
+    }
+    #stripCanvasContainer {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: white;
+        margin: 0;
+        padding: 0;
+    }
+    #stripCanvas {
+        max-width: 100vw;
+        max-height: 100vh;
+        object-fit: contain;
+    }
+}
