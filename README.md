@@ -34,7 +34,7 @@ Aplikasi Web Photobooth ala studio foto Korea/Jepang (seperti *Life Four Cuts*, 
    - **Double Strip (2x4)**: Strip ganda berdampingan lengkap dengan garis putus-putus gunting (✂️) untuk berbagi bersama sahabat/pasangan.
    - **Grid 2x2**: Tipe photocard aesthetic (4 foto).
    - **Grid 6-Cut**: 6 foto pose lengkap.
-   - Pilihan warna bingkai: Pure White, Chic Noir, Pastel Rosé, Baby Cloud, Matcha Sage, Sweet Butter, Lavender Mist, Vintage Paper, hingga Sunset Dream Gradient!
+   - Pilihan warna bingkai: Pure White, Chic Noir, Pastel Rosé, Baby Cloud, Matcha Sage, Sweet Butter, Lavender Mist, Vintage Paper, serta 4 pilihan Gradien Estetik (Sunset Dream, Peach Sunrise 🍑, Aurora Mint 🌿, Cosmic Galaxy 🌌)!
 
 5. **Kustomisasi & Stiker Interaktif**
    - Hias foto strip Anda dengan stiker lucu (pita 🎀, telinga kelinci 🐰, kucing 🐱, bintang ⭐, glitter ✨, ceri 🍒, kacamata 🕶️, dan badge lucu).

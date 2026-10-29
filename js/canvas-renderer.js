@@ -10,7 +10,10 @@ class PhotoboothRenderer {
             'butter': { name: 'Sweet Butter', bg: '#fef9c3', text: '#713f12', subtext: '#854d0e', border: '#fef08a' },
             'lavender': { name: 'Lavender Mist', bg: '#f3e8ff', text: '#581c87', subtext: '#7e22ce', border: '#e9d5ff' },
             'retro-beige': { name: 'Vintage Paper', bg: '#f7f2ea', text: '#44403c', subtext: '#78716c', border: '#e7e0d3' },
-            'gradient': { name: 'Sunset Dream', gradient: ['#fbcfe8', '#bfdbfe'], text: '#4c1d95', subtext: '#6d28d9', border: '#ffffff' }
+            'gradient': { name: 'Sunset Dream', gradient: ['#fbcfe8', '#bfdbfe'], text: '#4c1d95', subtext: '#6d28d9', border: '#ffffff' },
+            'gradient-peach': { name: 'Peach Sunrise', gradient: ['#fed7aa', '#fbcfe8'], text: '#9f1239', subtext: '#be123c', border: '#ffffff' },
+            'gradient-aurora': { name: 'Aurora Mint', gradient: ['#a7f3d0', '#c7d2fe'], text: '#1e3a8a', subtext: '#2563eb', border: '#ffffff' },
+            'gradient-cosmic': { name: 'Cosmic Galaxy', gradient: ['#1e1b4b', '#581c87'], text: '#ffffff', subtext: '#e2e8f0', border: '#3b0764' }
         };
 
         this.currentTheme = 'white';
