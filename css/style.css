@@ -56,6 +56,104 @@ body {
     box-shadow: 0 10px 30px -5px rgba(225, 29, 72, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.02);
 }
 
+/* Dark Mode Theme */
+html.dark body, body.dark {
+    background: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #1c1024 100%) !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .glass-panel {
+    background: rgba(17, 24, 39, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6) !important;
+    color: #f8fafc !important;
+}
+
+html.dark header.glass-panel {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark label, html.dark .text-slate-600 {
+    color: #94a3b8 !important;
+}
+
+html.dark input[type="text"] {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.dark input[type="text"]:focus {
+    border-color: #f43f5e !important;
+}
+
+html.dark #stripCanvasContainer {
+    background-color: rgba(15, 23, 42, 0.85) !important;
+    border-color: #334155 !important;
+}
+
+html.dark #stickerPalette {
+    background-color: rgba(15, 23, 42, 0.7) !important;
+    border-color: #334155 !important;
+}
+
+html.dark .sticker-item {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html.dark .filter-chip {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html.dark .filter-chip.active {
+    background-color: #f43f5e !important;
+    color: #ffffff !important;
+    border-color: #f43f5e !important;
+}
+
+html.dark .timer-btn {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html.dark .timer-btn.bg-rose-500 {
+    background-color: #f43f5e !important;
+    color: #ffffff !important;
+}
+
+html.dark .layout-btn {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html.dark .layout-btn.active {
+    border-color: #f43f5e !important;
+    color: #f43f5e !important;
+}
+
+html.dark #btnCopy {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+html.dark #btnSingleSnap {
+    background-color: #0f172a !important;
+    border: 1px solid #334155 !important;
+}
+
+html.dark .custom-scroll::-webkit-scrollbar-thumb {
+    background: #334155;
+}
+html.dark .custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #f43f5e;
+}
+
 /* Camera Live Viewfinder */
 .viewfinder-box {
     position: relative;

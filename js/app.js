@@ -41,6 +41,11 @@ class PhotoboothApp {
         this.btnToggleSound = document.getElementById('btnToggleSound');
         this.cameraSelect = document.getElementById('cameraSelect');
 
+        // Dark Mode elements
+        this.btnToggleDark = document.getElementById('btnToggleDark');
+        this.darkIcon = document.getElementById('darkIcon');
+        this.darkText = document.getElementById('darkText');
+
         // Text customizer
         this.inputTitle = document.getElementById('inputTitle');
         this.inputSubtitle = document.getElementById('inputSubtitle');
@@ -73,11 +78,44 @@ class PhotoboothApp {
         // Set default filter
         window.filterManager.setFilter('soft-glow', this.video);
 
+        // Initialize Dark Mode
+        this.initDarkMode();
+
         // Sync text from HTML input fields (reads whatever is set in index.html!)
         this.syncTextFromInputs();
 
         // Render initial canvas preview
         this.renderCanvas();
+    }
+
+    initDarkMode() {
+        const savedDark = localStorage.getItem('photobooth_dark_mode');
+        const isDark = savedDark === 'true';
+        this.setDarkMode(isDark);
+
+        if (this.btnToggleDark) {
+            this.btnToggleDark.addEventListener('click', () => {
+                const currentDark = document.documentElement.classList.contains('dark');
+                this.setDarkMode(!currentDark);
+                this.showToast(!currentDark ? 'Mode Gelap Aktif 🌙' : 'Mode Terang Aktif ☀️', 'info');
+            });
+        }
+    }
+
+    setDarkMode(enable) {
+        if (enable) {
+            document.documentElement.classList.add('dark');
+            document.body.classList.add('dark');
+            if (this.darkIcon) this.darkIcon.innerText = '☀️';
+            if (this.darkText) this.darkText.innerText = 'Light';
+            localStorage.setItem('photobooth_dark_mode', 'true');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.body.classList.remove('dark');
+            if (this.darkIcon) this.darkIcon.innerText = '🌙';
+            if (this.darkText) this.darkText.innerText = 'Dark';
+            localStorage.setItem('photobooth_dark_mode', 'false');
+        }
     }
 
     syncTextFromInputs() {

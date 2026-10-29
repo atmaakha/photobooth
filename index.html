@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -53,33 +54,40 @@
 
             <!-- Header Quick Controls -->
             <div class="flex items-center gap-2">
+                <!-- Dark Mode Toggle (Samping Kiri Pilihan Kamera) -->
+                <button id="btnToggleDark"
+                    class="px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition shadow-sm flex items-center gap-1.5 cursor-pointer"
+                    title="Mode Gelap / Terang">
+                    <span id="darkIcon">🌙</span> <span class="hidden sm:inline" id="darkText">Dark</span>
+                </button>
+
                 <!-- Camera Select -->
                 <div
-                    class="hidden sm:flex items-center bg-white/80 border border-slate-200 rounded-xl px-2.5 py-1 text-xs">
+                    class="hidden sm:flex items-center bg-white/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
                     <span class="mr-1.5 text-slate-400">📹</span>
                     <select id="cameraSelect"
-                        class="bg-transparent outline-none text-slate-700 cursor-pointer max-w-[180px] truncate">
+                        class="bg-transparent outline-none text-slate-700 dark:text-slate-200 cursor-pointer max-w-[180px] truncate">
                         <option value="">Memuat kamera...</option>
                     </select>
                 </div>
 
                 <!-- Mirror Toggle -->
                 <button id="btnToggleMirror"
-                    class="px-2.5 py-1.5 rounded-xl bg-white/80 border border-slate-200 hover:bg-rose-50 text-slate-700 text-xs font-semibold transition shadow-sm flex items-center gap-1"
+                    class="px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition shadow-sm flex items-center gap-1"
                     title="Toggle Mirror / Cermin">
                     <span>🪞</span> <span class="hidden sm:inline">Cermin</span>
                 </button>
 
                 <!-- Grid Guide -->
                 <button id="btnToggleGrid"
-                    class="px-2.5 py-1.5 rounded-xl bg-white/80 border border-slate-200 hover:bg-rose-50 text-slate-700 text-xs font-semibold transition shadow-sm flex items-center gap-1"
+                    class="px-2.5 py-1.5 rounded-xl bg-white/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition shadow-sm flex items-center gap-1"
                     title="Panduan Grid Garis">
                     <span>📐</span> <span class="hidden sm:inline">Grid</span>
                 </button>
 
                 <!-- Sound Toggle -->
                 <button id="btnToggleSound"
-                    class="w-8 h-8 rounded-xl bg-white/80 border border-slate-200 hover:bg-rose-50 text-slate-700 text-sm flex items-center justify-center transition shadow-sm"
+                    class="w-8 h-8 rounded-xl bg-white/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm flex items-center justify-center transition shadow-sm"
                     title="Suara Shutter & Timer">
                     🔊
                 </button>
