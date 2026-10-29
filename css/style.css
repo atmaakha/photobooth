@@ -154,6 +154,46 @@ html.dark .custom-scroll::-webkit-scrollbar-thumb:hover {
     background: #f43f5e;
 }
 
+/* Dark Mode Extra Component Overrides */
+html.dark .text-slate-800,
+html.dark .text-slate-700 {
+    color: #f1f5f9 !important;
+}
+html.dark .text-slate-600,
+html.dark .text-slate-500 {
+    color: #cbd5e1 !important;
+}
+html.dark .text-slate-400 {
+    color: #94a3b8 !important;
+}
+html.dark header button,
+html.dark #cameraSelect {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+}
+html.dark header button:hover {
+    background-color: #334155 !important;
+}
+html.dark #photoSlotsContainer > div.border-dashed {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+html.dark #historyContainer > div {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+html.dark #historyContainer img {
+    background-color: #0f172a !important;
+}
+html.dark #stickerTransformControls button {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+}
+html.dark #stickerTransformControls button:hover {
+    background-color: #334155 !important;
+}
+
 /* Camera Live Viewfinder */
 .viewfinder-box {
     position: relative;

@@ -89,32 +89,9 @@ class PhotoboothApp {
     }
 
     initDarkMode() {
-        const savedDark = localStorage.getItem('photobooth_dark_mode');
-        const isDark = savedDark === 'true';
-        this.setDarkMode(isDark);
-
-        if (this.btnToggleDark) {
-            this.btnToggleDark.addEventListener('click', () => {
-                const currentDark = document.documentElement.classList.contains('dark');
-                this.setDarkMode(!currentDark);
-                this.showToast(!currentDark ? 'Mode Gelap Aktif 🌙' : 'Mode Terang Aktif ☀️', 'info');
-            });
-        }
-    }
-
-    setDarkMode(enable) {
-        if (enable) {
-            document.documentElement.classList.add('dark');
-            document.body.classList.add('dark');
-            if (this.darkIcon) this.darkIcon.innerText = '☀️';
-            if (this.darkText) this.darkText.innerText = 'Light';
-            localStorage.setItem('photobooth_dark_mode', 'true');
-        } else {
-            document.documentElement.classList.remove('dark');
-            document.body.classList.remove('dark');
-            if (this.darkIcon) this.darkIcon.innerText = '🌙';
-            if (this.darkText) this.darkText.innerText = 'Dark';
-            localStorage.setItem('photobooth_dark_mode', 'false');
+        const isDark = document.documentElement.classList.contains('dark') || localStorage.getItem('photobooth_dark_mode') === 'true';
+        if (typeof window.updateDarkUI === 'function') {
+            window.updateDarkUI(isDark);
         }
     }
 
