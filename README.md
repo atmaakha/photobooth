@@ -70,24 +70,101 @@ Aplikasi Web Photobooth ala studio foto Korea & Jepang (seperti *Life Four Cuts*
 
 ---
 
-## 🚀 Cara Menjalankan
+## 🚀 Panduan Lengkap Cara Menjalankan
 
-### Cara 1: Menggunakan Script Cepat (Windows)
-Cukup klik dua kali file:
-```cmd
-start.bat
-```
-Browser default Anda akan otomatis terbuka di `http://localhost:3000`.
+Berikut adalah panduan langkah demi langkah yang sangat mudah diikuti untuk menjalankan aplikasi Photobooth di komputer atau laptop Anda:
 
-### Cara 2: Menggunakan Terminal / Command Prompt
-Jalankan salah satu perintah berikut di direktori proyek:
-```bash
-python server.py
-```
-atau dengan Node.js:
-```bash
-npx serve .
-```
+### 📋 Prasyarat Sistem
+- **Perangkat**: Laptop atau PC yang memiliki kamera (webcam internal atau webcam USB eksternal).
+- **Web Browser Modern**: Google Chrome (Sangat Disarankan), Microsoft Edge, Mozilla Firefox, Opera, atau Brave.
+- **Koneksi Internet**: Dibutuhkan di awal untuk memuat CDN Tailwind CSS, Google Fonts, dan library pelacak wajah MediaPipe.
+- **Python / Node.js** *(Opsional)*: Disarankan untuk menjalankan web server lokal agar semua fitur (seperti AR Face Tracking dan Web Worker) berjalan optimal.
+
+---
+
+### Langkah 1: Unduh / Clone Proyek
+
+Pilih salah satu cara di bawah ini:
+
+* **Cara A (Menggunakan Git):**
+  Buka terminal / Git Bash, lalu ketik perintah:
+  ```bash
+  git clone https://github.com/atmaakha/photobooth.git
+  cd photobooth
+  ```
+
+* **Cara B (Download File ZIP):**
+  1. Kunjungi halaman GitHub: [https://github.com/atmaakha/photobooth](https://github.com/atmaakha/photobooth)
+  2. Klik tombol hijau **`<> Code`** di pojok kanan atas.
+  3. Pilih **`Download ZIP`**.
+  4. Ekstrak file ZIP tersebut ke folder di komputer Anda (misalnya di Desktop atau Documents).
+
+---
+
+### Langkah 2: Menjalankan Aplikasi (Pilih Salah Satu Metode)
+
+Pilih metode yang paling nyaman dan sesuai dengan perangkat Anda:
+
+#### ⚡ Metode A: Klik Dua Kali `start.bat` (Paling Praktis untuk Windows)
+1. Buka folder tempat file proyek berada.
+2. Cari file bernama **`start.bat`**.
+3. **Klik 2x (Double-click)** file `start.bat` tersebut.
+4. Jendela terminal hitam akan muncul dan browser default Anda akan otomatis membuka halaman `http://localhost:3000`.
+
+---
+
+#### 🐍 Metode B: Menggunakan Terminal / Command Prompt (Python)
+Jika komputer Anda sudah terpasang Python:
+1. Buka **Command Prompt (CMD)** atau **PowerShell**.
+2. Masuk ke folder proyek photobooth:
+   ```cmd
+   cd path/ke/folder/photobooth
+   ```
+3. Jalankan script server bawaan:
+   ```bash
+   python server.py
+   ```
+   *(Atau bisa juga menggunakan perintah standar: `python -m http.server 3000`)*
+4. Browser akan otomatis terbuka. Jika tidak terbuka otomatis, buka browser Anda lalu ketik alamat:
+   👉 **`http://localhost:3000`**
+
+---
+
+#### 🟢 Metode C: Menggunakan Node.js / npx
+Jika Anda adalah pengguna Node.js:
+1. Buka terminal di folder proyek.
+2. Jalankan perintah:
+   ```bash
+   npx serve .
+   ```
+3. Buka alamat URL yang tertera di terminal (biasanya `http://localhost:3000` atau `http://localhost:5000`).
+
+---
+
+#### 💻 Metode D: Menggunakan VS Code (Live Server)
+1. Buka folder proyek photobooth di aplikasi **Visual Studio Code**.
+2. Pasang ekstensi **Live Server** (oleh Ritwick Dey) dari menu Extensions jika belum ada.
+3. Klik kanan pada file `index.html`, lalu pilih **"Open with Live Server"**.
+
+---
+
+### Langkah 3: Mengizinkan Akses Kamera di Browser
+
+1. Ketika halaman `http://localhost:3000` pertama kali dibuka di browser, akan muncul kotak dialog izin (pop-up) di pojok kiri atas browser:
+   > *"localhost:3000 wants to use your camera"* atau *"Izinkan situs ini menggunakan kamera Anda"*.
+2. Klik tombol **`Allow`** / **`Izinkan`**.
+3. Tampilan webcam laptop Anda akan langsung aktif di layar studio photobooth! 📸
+
+---
+
+## 🛠️ Solusi Kendala Umum (Troubleshooting)
+
+| Kendala | Penyebab & Solusi |
+| :--- | :--- |
+| **Layar kamera hitam / tidak muncul gambar** | • Klik ikon **gembok / perizinan** di sebelah kiri URL browser (`http://localhost:3000`), pastikan izin **Kamera (Camera)** sudah disetel ke **Allow / Izinkan**.<br>• Pastikan tidak ada aplikasi lain yang sedang mengunci kamera (tutup aplikasi Zoom, Google Meet, Teams, OBS, Skype, atau aplikasi Kamera Windows).<br>• Jika memiliki webcam ganda, pilih kamera lain melalui dropdown pilihan kamera di pojok kanan atas. |
+| **Port 3000 sudah dipakai aplikasi lain** | • Buka file `server.py` dengan teks editor.<br>• Ubah baris ke-7 `PORT = 3000` menjadi port lain, misalnya `PORT = 8080`.<br>• Simpan file dan jalankan kembali `start.bat` atau `python server.py`. |
+| **Fitur baru / tombol belum berubah** | • Browser mungkin masih menyimpan file cache lama.<br>• Tekan tombol **`Ctrl + F5`** (atau `Ctrl + Shift + R`) di keyboard untuk melakukan **Hard Refresh** dan memuat versi terbaru. |
+| **Cara menghentikan server** | • Di jendela terminal/CMD tempat server berjalan, tekan kombinasi tombol **`Ctrl + C`**, atau cukup tutup jendela terminal tersebut. |
 
 ---
 
