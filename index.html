@@ -45,14 +45,14 @@
         }
 
         // Apply immediately before DOM renders to prevent white flash
-        (function() {
+        (function () {
             if (localStorage.getItem('photobooth_dark_mode') === 'true') {
                 document.documentElement.classList.add('dark');
             }
         })();
 
         // Update icon and text once DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const isDark = document.documentElement.classList.contains('dark');
             if (isDark) document.body.classList.add('dark');
             updateDarkUI(isDark);
@@ -369,7 +369,7 @@
                 <div class="glass-panel p-3.5 sm:p-4 rounded-2xl space-y-3.5">
 
                     <!-- Frame Color Palette -->
-                    <div>
+                    <div class="relative">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">🎨
                             Warna Bingkai</label>
                         <div class="flex flex-wrap gap-2 items-center">
@@ -395,8 +395,75 @@
                                 data-theme="gradient-peach" title="Peach Sunrise 🍑"></button>
                             <button class="color-circle bg-gradient-to-r from-emerald-200 to-indigo-200 shadow-sm"
                                 data-theme="gradient-aurora" title="Aurora Mint 🌿"></button>
-                            <button class="color-circle bg-gradient-to-r from-indigo-950 to-purple-800 shadow-sm border border-indigo-700/50"
+                            <button
+                                class="color-circle bg-gradient-to-r from-indigo-950 to-purple-800 shadow-sm border border-indigo-700/50"
                                 data-theme="gradient-cosmic" title="Cosmic Galaxy 🌌"></button>
+                            
+                            <!-- Custom 2-Color Gradient Circle Button -->
+                            <button id="btnCustomGradientCircle"
+                                class="color-circle shadow-sm border border-rose-300 dark:border-slate-600 relative flex items-center justify-center hover:scale-110 transition cursor-pointer"
+                                style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);"
+                                data-theme="custom-gradient"
+                                title="Kustom Gradasi 2 Warna (Klik untuk atur warna)">
+                                <span class="text-white text-[12px] font-bold drop-shadow select-none">🎨</span>
+                            </button>
+                        </div>
+
+                        <!-- Floating Mini Pop-up for 2-Color Gradient Selection -->
+                        <div id="gradientPickerPopup"
+                            class="hidden absolute z-50 left-0 sm:left-auto sm:right-0 top-full mt-2 p-3.5 rounded-2xl glass-panel shadow-2xl border border-rose-200/90 dark:border-slate-700 w-72 backdrop-blur-xl transition-all">
+                            <div class="flex items-center justify-between pb-2 mb-2.5 border-b border-rose-100/80 dark:border-slate-800">
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                                    <span>🎨</span> Pilih 2 Warna Gradasi
+                                </span>
+                                <button id="btnCloseGradPopup" type="button"
+                                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs transition"
+                                    title="Tutup Pop-up">
+                                    ✕
+                                </button>
+                            </div>
+
+                            <!-- 2 Color Inputs -->
+                            <div class="grid grid-cols-2 gap-2.5 mb-3">
+                                <div class="bg-slate-50 dark:bg-slate-800/80 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                    <label class="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Warna 1 (Awal)</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" id="inputGradColor1" value="#ff9a9e"
+                                            class="w-7 h-7 rounded-lg border-0 p-0 cursor-pointer bg-transparent shadow-sm">
+                                        <span id="hexGradColor1" class="text-[11px] font-mono font-semibold text-slate-700 dark:text-slate-200">#FF9A9E</span>
+                                    </div>
+                                </div>
+                                <div class="bg-slate-50 dark:bg-slate-800/80 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                    <label class="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Warna 2 (Akhir)</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" id="inputGradColor2" value="#fecfef"
+                                            class="w-7 h-7 rounded-lg border-0 p-0 cursor-pointer bg-transparent shadow-sm">
+                                        <span id="hexGradColor2" class="text-[11px] font-mono font-semibold text-slate-700 dark:text-slate-200">#FECFEF</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Live Preview Bar -->
+                            <div class="mb-3">
+                                <div class="flex items-center justify-between text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1">
+                                    <span>Pratinjau Gradasi</span>
+                                    <span class="text-[9px] text-slate-400">135° diagonal</span>
+                                </div>
+                                <div id="gradLivePreviewBar" class="h-6 w-full rounded-xl shadow-inner border border-white/40 dark:border-slate-600/50"
+                                    style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);"></div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex items-center justify-end gap-2 pt-2 border-t border-rose-100/80 dark:border-slate-800">
+                                <button id="btnCancelGradPopup" type="button"
+                                    class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                    Tutup
+                                </button>
+                                <button id="btnApplyGradPopup" type="button"
+                                    class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold shadow-md shadow-rose-500/20 flex items-center gap-1.5 transition active:scale-95">
+                                    <span class="text-sm">✓</span> Terapkan
+                                </button>
+                            </div>
                         </div>
                     </div>
 

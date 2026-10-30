@@ -311,6 +311,28 @@ html.dark #stickerTransformControls button:hover {
     transform: scale(1.1);
 }
 
+/* Custom Color Input Styling */
+input[type="color"] {
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    background: transparent;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+}
+html.dark input[type="color"]::-webkit-color-swatch {
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+
 /* Sticker Hover */
 .sticker-item {
     transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);

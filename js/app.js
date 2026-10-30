@@ -84,6 +84,9 @@ class PhotoboothApp {
         // Sync text from HTML input fields (reads whatever is set in index.html!)
         this.syncTextFromInputs();
 
+        // Initialize Custom 2-Color Gradient Picker
+        this.initCustomGradientPicker();
+
         // Render initial canvas preview
         this.renderCanvas();
     }
@@ -194,6 +197,10 @@ class PhotoboothApp {
         // Frame Themes
         document.querySelectorAll('.color-circle').forEach(btn => {
             btn.addEventListener('click', () => {
+                if (btn.id === 'btnCustomGradientCircle') {
+                    // Handled separately by custom gradient popup toggler
+                    return;
+                }
                 document.querySelectorAll('.color-circle').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.renderer.currentTheme = btn.dataset.theme;
@@ -237,6 +244,110 @@ class PhotoboothApp {
         this.btnDownload.addEventListener('click', () => this.downloadHighRes());
         this.btnPrint.addEventListener('click', () => window.print());
         this.btnCopy.addEventListener('click', () => this.copyToClipboard());
+    }
+
+    initCustomGradientPicker() {
+        const btnCircle = document.getElementById('btnCustomGradientCircle');
+        const popup = document.getElementById('gradientPickerPopup');
+        const color1Input = document.getElementById('inputGradColor1');
+        const color2Input = document.getElementById('inputGradColor2');
+        const hex1Label = document.getElementById('hexGradColor1');
+        const hex2Label = document.getElementById('hexGradColor2');
+        const previewBar = document.getElementById('gradLivePreviewBar');
+        const btnClose = document.getElementById('btnCloseGradPopup');
+        const btnCancel = document.getElementById('btnCancelGradPopup');
+        const btnApply = document.getElementById('btnApplyGradPopup');
+
+        if (!btnCircle || !popup || !color1Input || !color2Input) return;
+
+        const updateLivePreview = () => {
+            const c1 = color1Input.value;
+            const c2 = color2Input.value;
+            if (hex1Label) hex1Label.textContent = c1.toUpperCase();
+            if (hex2Label) hex2Label.textContent = c2.toUpperCase();
+            if (previewBar) {
+                previewBar.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+            }
+            btnCircle.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+        };
+
+        const openPopup = () => {
+            popup.classList.remove('hidden');
+            updateLivePreview();
+        };
+
+        const closePopup = () => {
+            popup.classList.add('hidden');
+        };
+
+        // Click on gradient circle: toggle popup & set as active theme
+        btnCircle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = popup.classList.contains('hidden');
+            if (isHidden) {
+                openPopup();
+                document.querySelectorAll('.color-circle').forEach(b => b.classList.remove('active'));
+                btnCircle.classList.add('active');
+                this.renderer.setCustomGradient(color1Input.value, color2Input.value);
+                this.renderCanvas();
+            } else {
+                closePopup();
+            }
+        });
+
+        // Real-time changes while picking colors
+        const handleColorChange = () => {
+            updateLivePreview();
+            this.renderer.setCustomGradient(color1Input.value, color2Input.value);
+            this.renderCanvas();
+        };
+
+        color1Input.addEventListener('input', handleColorChange);
+        color2Input.addEventListener('input', handleColorChange);
+
+        // Apply Button (✓ Terapkan)
+        if (btnApply) {
+            btnApply.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const c1 = color1Input.value;
+                const c2 = color2Input.value;
+                this.renderer.setCustomGradient(c1, c2);
+                document.querySelectorAll('.color-circle').forEach(b => b.classList.remove('active'));
+                btnCircle.classList.add('active');
+                btnCircle.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+                this.renderCanvas();
+                closePopup();
+                this.showToast('Gradasi kustom berhasil diterapkan! ✨');
+            });
+        }
+
+        // Close and Cancel buttons
+        if (btnClose) {
+            btnClose.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closePopup();
+            });
+        }
+        if (btnCancel) {
+            btnCancel.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closePopup();
+            });
+        }
+
+        // Click outside popup to close
+        document.addEventListener('click', (e) => {
+            if (!popup.classList.contains('hidden')) {
+                if (!popup.contains(e.target) && e.target !== btnCircle && !btnCircle.contains(e.target)) {
+                    closePopup();
+                }
+            }
+        });
+
+        // Prevent click inside popup from bubbling to document listener
+        popup.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
     }
 
     initStickerControls() {

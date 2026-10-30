@@ -13,7 +13,8 @@ class PhotoboothRenderer {
             'gradient': { name: 'Sunset Dream', gradient: ['#fbcfe8', '#bfdbfe'], text: '#4c1d95', subtext: '#6d28d9', border: '#ffffff' },
             'gradient-peach': { name: 'Peach Sunrise', gradient: ['#fed7aa', '#fbcfe8'], text: '#9f1239', subtext: '#be123c', border: '#ffffff' },
             'gradient-aurora': { name: 'Aurora Mint', gradient: ['#a7f3d0', '#c7d2fe'], text: '#1e3a8a', subtext: '#2563eb', border: '#ffffff' },
-            'gradient-cosmic': { name: 'Cosmic Galaxy', gradient: ['#1e1b4b', '#581c87'], text: '#ffffff', subtext: '#e2e8f0', border: '#3b0764' }
+            'gradient-cosmic': { name: 'Cosmic Galaxy', gradient: ['#1e1b4b', '#581c87'], text: '#ffffff', subtext: '#e2e8f0', border: '#3b0764' },
+            'custom-gradient': { name: 'Custom Gradient', gradient: ['#ff9a9e', '#fecfef'], text: '#9f1239', subtext: '#be123c', border: '#ffffff' }
         };
 
         this.currentTheme = 'white';
@@ -30,6 +31,36 @@ class PhotoboothRenderer {
         this.roundCorners = 8; // rounded corners on photo frames
         this.padding = 24;
         this.gap = 16;
+    }
+
+    getLuminance(hex) {
+        if (!hex) return 0.5;
+        let c = hex.replace('#', '');
+        if (c.length === 3) c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2];
+        const rgb = parseInt(c, 16);
+        const r = ((rgb >> 16) & 0xff) / 255;
+        const g = ((rgb >> 8) & 0xff) / 255;
+        const b = (rgb & 0xff) / 255;
+        return 0.299 * r + 0.587 * g + 0.114 * b;
+    }
+
+    setCustomGradient(color1, color2) {
+        const lum1 = this.getLuminance(color1);
+        const lum2 = this.getLuminance(color2);
+        const avgLum = (lum1 + lum2) / 2;
+
+        const isDarkBg = avgLum < 0.45;
+        const textColor = isDarkBg ? '#ffffff' : '#1e1b4b';
+        const subtextColor = isDarkBg ? '#cbd5e1' : '#475569';
+
+        this.frameThemes['custom-gradient'] = {
+            name: 'Custom Gradient',
+            gradient: [color1, color2],
+            text: textColor,
+            subtext: subtextColor,
+            border: isDarkBg ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'
+        };
+        this.currentTheme = 'custom-gradient';
     }
 
     getFormattedDate() {
