@@ -165,8 +165,8 @@ class PhotoboothApp {
         // Countdown timer options
         document.querySelectorAll('.timer-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('bg-rose-500', 'text-white'));
-                btn.classList.add('bg-rose-500', 'text-white');
+                document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
                 this.countdownTimer = parseInt(btn.dataset.time);
             });
         });
@@ -174,8 +174,8 @@ class PhotoboothApp {
         // Filters
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active', 'border-rose-500'));
-                btn.classList.add('active', 'border-rose-500');
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
                 const filterKey = btn.dataset.filter;
                 window.filterManager.setFilter(filterKey, this.video);
                 this.renderCanvas();
@@ -185,8 +185,8 @@ class PhotoboothApp {
         // Layouts
         document.querySelectorAll('.layout-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active', 'border-rose-500'));
-                btn.classList.add('active', 'border-rose-500');
+                document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
                 this.renderer.layout = btn.dataset.layout;
                 this.targetPhotoCount = parseInt(btn.dataset.photos) || 4;
                 this.updateShotSlots();

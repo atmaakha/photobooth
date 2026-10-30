@@ -58,7 +58,7 @@
             updateDarkUI(isDark);
         });
     </script>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=2.4">
 </head>
 
 <body class="text-slate-800 antialiased selection:bg-rose-200">
@@ -245,15 +245,9 @@
                             <label class="block text-[11px] font-bold text-slate-600 mb-1.5 uppercase tracking-wider">⏱️
                                 Hitung Mundur</label>
                             <div class="flex gap-1.5">
-                                <button
-                                    class="timer-btn flex-1 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-rose-500 text-white transition"
-                                    data-time="3">3 Detik</button>
-                                <button
-                                    class="timer-btn flex-1 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 transition"
-                                    data-time="5">5 Detik</button>
-                                <button
-                                    class="timer-btn flex-1 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 transition"
-                                    data-time="10">10 Detik</button>
+                                <button class="timer-btn active" data-time="3">3 Detik</button>
+                                <button class="timer-btn" data-time="5">5 Detik</button>
+                                <button class="timer-btn" data-time="10">10 Detik</button>
                             </div>
                         </div>
 
@@ -264,29 +258,29 @@
                                 Format Strip</label>
                             <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                                 <button
-                                    class="layout-btn active py-1.5 px-1.5 rounded-xl text-[11px] font-bold border border-rose-500 bg-white text-slate-800 transition text-center"
+                                    class="layout-btn active"
                                     data-layout="strip-4" data-photos="4">
                                     Strip 4-Cut
                                 </button>
                                 <button
-                                    class="layout-btn py-1.5 px-1.5 rounded-xl text-[11px] font-bold border border-slate-200 bg-white text-slate-800 transition text-center flex items-center justify-center gap-1"
+                                    class="layout-btn flex items-center justify-center gap-1"
                                     data-layout="story-9-16" data-photos="4"
                                     title="Rasio 9:16 Resolusi 1080x1920 px (4 Foto)">
                                     <span>Story 9:16</span> <span
                                         class="text-[9px] bg-rose-100 text-rose-600 px-1 py-0.2 rounded font-semibold">HD</span>
                                 </button>
                                 <button
-                                    class="layout-btn py-1.5 px-1.5 rounded-xl text-[11px] font-bold border border-slate-200 bg-white text-slate-800 transition text-center"
+                                    class="layout-btn"
                                     data-layout="double-strip-4" data-photos="4">
                                     Double (2x4)
                                 </button>
                                 <button
-                                    class="layout-btn py-1.5 px-1.5 rounded-xl text-[11px] font-bold border border-slate-200 bg-white text-slate-800 transition text-center"
+                                    class="layout-btn"
                                     data-layout="grid-4" data-photos="4">
                                     Grid 2x2
                                 </button>
                                 <button
-                                    class="layout-btn py-1.5 px-1.5 rounded-xl text-[11px] font-bold border border-slate-200 bg-white text-slate-800 transition text-center"
+                                    class="layout-btn"
                                     data-layout="grid-6" data-photos="6">
                                     Grid 6-Cut
                                 </button>
@@ -561,13 +555,13 @@
         crossorigin="anonymous"></script>
 
     <!-- Scripts with Cache-Busting -->
-    <script src="js/audio.js?v=2.3"></script>
-    <script src="js/filters.js?v=2.3"></script>
-    <script src="js/face-tracker.js?v=2.3"></script>
-    <script src="js/camera.js?v=2.3"></script>
-    <script src="js/stickers.js?v=2.3"></script>
-    <script src="js/canvas-renderer.js?v=2.3"></script>
-    <script src="js/app.js?v=2.3"></script>
+    <script src="js/audio.js?v=2.4"></script>
+    <script src="js/filters.js?v=2.4"></script>
+    <script src="js/face-tracker.js?v=2.4"></script>
+    <script src="js/camera.js?v=2.4"></script>
+    <script src="js/stickers.js?v=2.4"></script>
+    <script src="js/canvas-renderer.js?v=2.4"></script>
+    <script src="js/app.js?v=2.4"></script>
 </body>
 
 </html>
