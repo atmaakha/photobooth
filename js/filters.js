@@ -65,14 +65,19 @@ class FilterManager {
     }
 
     setFilter(filterKey, videoElement) {
-        if (!FILTERS[filterKey]) return;
+        if (!FILTERS[filterKey]) {
+            console.warn('Unknown filter key:', filterKey);
+            return;
+        }
         this.currentFilter = filterKey;
         if (videoElement) {
             videoElement.style.filter = FILTERS[filterKey].css;
         }
         if (window.faceTracker) {
             if (FILTERS[filterKey].isAR) {
-                window.faceTracker.setFilterType(filterKey);
+                if (typeof window.faceTracker.setFilterType === 'function') {
+                    window.faceTracker.setFilterType(filterKey);
+                }
                 window.faceTracker.start();
             } else {
                 window.faceTracker.stop();

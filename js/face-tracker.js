@@ -46,7 +46,7 @@ class FaceTracker {
                 });
                 this.mpDetector.setOptions({
                     model: 'short', // Optimized for front-facing webcam within 2-4 meters
-                    minDetectionConfidence: 0.52
+                    minDetectionConfidence: 0.35 // High sensitivity for multiple faces, glasses, and hijabs
                 });
                 this.mpDetector.onResults((results) => this.handleMediaPipeResults(results));
                 await this.mpDetector.initialize();
@@ -83,6 +83,15 @@ class FaceTracker {
 
     start() {
         this.enabled = true;
+        if (!this.arCanvas) {
+            this.arCanvas = document.getElementById('arCanvas');
+            if (this.arCanvas) {
+                this.arCtx = this.arCanvas.getContext('2d');
+            }
+        }
+        if (!this.video && window.app) {
+            this.video = window.app.video;
+        }
         if (this.arCanvas) {
             this.arCanvas.style.display = 'block';
         }
@@ -166,6 +175,15 @@ class FaceTracker {
                 nose: nosePt
             });
         });
+
+        if (detected.length === 0) {
+            // Fallback 2D CV if MediaPipe detected 0 faces
+            const fallback = this.detectFacesRobust2D();
+            if (fallback && fallback.length > 0) {
+                this.updateTrackedFaces(fallback);
+                return;
+            }
+        }
 
         this.updateTrackedFaces(detected);
     }
@@ -438,9 +456,13 @@ class FaceTracker {
             const isMirrored = (window.app && window.app.camera) ? window.app.camera.isMirrored : true;
             const time = now / 1000;
 
-            this.faces.forEach((face, idx) => {
-                this.drawARFilter(this.arCtx, face, vw, vh, time, idx, isMirrored);
-            });
+            try {
+                this.faces.forEach((face, idx) => {
+                    this.drawARFilter(this.arCtx, face, vw, vh, time, idx, isMirrored);
+                });
+            } catch (err) {
+                console.warn('AR drawing error:', err);
+            }
         }
 
         this.animId = requestAnimationFrame(() => this.loop());
@@ -581,6 +603,7 @@ class FaceTracker {
 
     // Sparkle star ✨
     drawSparkle(ctx, x, y, radius, alpha = 0.55) {
+        if (!radius || radius <= 0 || !isFinite(radius) || !isFinite(x) || !isFinite(y)) return;
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.fillStyle = '#fff0f5';
@@ -616,28 +639,33 @@ class FaceTracker {
 
     // Render AR Cat Ears filter directly on face locations
     drawCatEarsFilter(ctx, face, width, height, time, personIdx = 0, isMirrored = false) {
+        if (!face || !width || !height) return;
         ctx.save();
 
-        const rawCrownX = (face.crownX !== undefined) ? face.crownX : face.x;
-        const rawCrownY = (face.crownY !== undefined) ? face.crownY : (face.y - face.h * 0.46);
+        const headW = Math.max(30, (face.w || 0.25) * width);
+        const headH = Math.max(35, (face.h || 0.35) * height);
+        if (!isFinite(headW) || !isFinite(headH)) {
+            ctx.restore();
+            return;
+        }
+
+        const rawCrownX = (typeof face.crownX === 'number' && isFinite(face.crownX)) ? face.crownX : (face.x || 0.5);
+        const rawCrownY = (typeof face.crownY === 'number' && isFinite(face.crownY)) ? face.crownY : ((face.y || 0.5) - (face.h || 0.3) * 0.44);
 
         const screenCrownX = isMirrored ? (1 - rawCrownX) * width : rawCrownX * width;
         const screenCrownY = rawCrownY * height;
 
-        const headW = face.w * width;
-        const headH = face.h * height;
-
-        // In mirror mode, tilt angle is negated
-        const tiltAngle = isMirrored ? -face.angle : face.angle;
+        const rawAngle = (typeof face.angle === 'number' && isFinite(face.angle)) ? face.angle : 0;
+        const tiltAngle = isMirrored ? -rawAngle : rawAngle;
 
         // 1. Cat Ears on top of the head
         ctx.save();
         ctx.translate(screenCrownX, screenCrownY);
         ctx.rotate(tiltAngle);
 
-        const earSize = Math.max(34, Math.min(125, headW * 0.44));
+        const earSize = Math.max(34, Math.min(130, headW * 0.44));
         const earSpacing = headW * 0.35;
-        const earY = -headH * 0.06;
+        const earY = -headH * 0.05;
 
         // Left Cat Ear (tilted slightly outward)
         this.drawCatEar(ctx, -earSpacing, earY, earSize, -0.32, true, time, personIdx);
@@ -659,7 +687,7 @@ class FaceTracker {
         // 2. Soft Rosy Cheek Blush
         let leftCheekScreen, rightCheekScreen;
 
-        if (face.leftCheek && face.rightCheek) {
+        if (face.leftCheek && face.rightCheek && typeof face.leftCheek.x === 'number' && typeof face.rightCheek.x === 'number') {
             if (isMirrored) {
                 leftCheekScreen = { x: (1 - face.leftCheek.x) * width, y: face.leftCheek.y * height };
                 rightCheekScreen = { x: (1 - face.rightCheek.x) * width, y: face.rightCheek.y * height };
@@ -668,8 +696,8 @@ class FaceTracker {
                 rightCheekScreen = { x: face.rightCheek.x * width, y: face.rightCheek.y * height };
             }
         } else {
-            const fx = isMirrored ? (1 - face.x) * width : face.x * width;
-            const fy = face.y * height;
+            const fx = isMirrored ? (1 - (face.x || 0.5)) * width : (face.x || 0.5) * width;
+            const fy = (face.y || 0.5) * height;
             const spreadX = headW * 0.28;
             const spreadY = headH * 0.12;
             leftCheekScreen = { x: fx + spreadX, y: fy + spreadY };
@@ -679,34 +707,36 @@ class FaceTracker {
         const cheekRadius = Math.max(12, headW * 0.14);
 
         [leftCheekScreen, rightCheekScreen].forEach(pt => {
-            if (!pt) return;
+            if (!pt || !isFinite(pt.x) || !isFinite(pt.y) || cheekRadius <= 0) return;
             ctx.save();
-            const grad = ctx.createRadialGradient(pt.x, pt.y, 2, pt.x, pt.y, cheekRadius * 1.35);
+            const rInner = 2;
+            const rOuter = Math.max(10, cheekRadius * 1.35);
+            const grad = ctx.createRadialGradient(pt.x, pt.y, rInner, pt.x, pt.y, rOuter);
             grad.addColorStop(0, 'rgba(255, 140, 180, 0.36)');
             grad.addColorStop(0.7, 'rgba(255, 185, 208, 0.16)');
             grad.addColorStop(1, 'rgba(255, 210, 225, 0)');
             ctx.fillStyle = grad;
             ctx.beginPath();
-            ctx.arc(pt.x, pt.y, cheekRadius * 1.35, 0, Math.PI * 2);
+            ctx.arc(pt.x, pt.y, rOuter, 0, Math.PI * 2);
             ctx.fill();
             ctx.restore();
         });
 
         // 3. Cute Cat Whiskers on both cheeks (fanning outwards away from nose)
-        const screenCenterX = isMirrored ? (1 - face.x) * width : face.x * width;
+        const screenCenterX = isMirrored ? (1 - (face.x || 0.5)) * width : (face.x || 0.5) * width;
 
-        if (leftCheekScreen) {
+        if (leftCheekScreen && isFinite(leftCheekScreen.x) && isFinite(leftCheekScreen.y)) {
             const pointsLeft = leftCheekScreen.x < screenCenterX;
             this.drawCatWhiskers(ctx, leftCheekScreen.x, leftCheekScreen.y, headW * 0.28, pointsLeft, tiltAngle);
         }
-        if (rightCheekScreen) {
+        if (rightCheekScreen && isFinite(rightCheekScreen.x) && isFinite(rightCheekScreen.y)) {
             const pointsLeft = rightCheekScreen.x < screenCenterX;
             this.drawCatWhiskers(ctx, rightCheekScreen.x, rightCheekScreen.y, headW * 0.28, pointsLeft, tiltAngle);
         }
 
         // 4. Cute Little Cat Nose
         let noseScreen;
-        if (face.nose) {
+        if (face.nose && typeof face.nose.x === 'number' && isFinite(face.nose.x)) {
             noseScreen = {
                 x: isMirrored ? (1 - face.nose.x) * width : face.nose.x * width,
                 y: face.nose.y * height
@@ -714,16 +744,19 @@ class FaceTracker {
         } else {
             noseScreen = {
                 x: screenCenterX,
-                y: face.y * height + headH * 0.04
+                y: (face.y || 0.5) * height + headH * 0.04
             };
         }
-        this.drawCatNose(ctx, noseScreen.x, noseScreen.y, headW * 0.08, tiltAngle);
+        if (noseScreen && isFinite(noseScreen.x) && isFinite(noseScreen.y)) {
+            this.drawCatNose(ctx, noseScreen.x, noseScreen.y, headW * 0.08, tiltAngle);
+        }
 
         ctx.restore();
     }
 
     // High quality vector cat ear with fluffy texture, gradient and inner tufts
     drawCatEar(ctx, x, y, size, angle, isLeft, time, personIdx = 0) {
+        if (!size || size <= 0 || !isFinite(size) || !isFinite(x) || !isFinite(y)) return;
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(angle);
@@ -801,7 +834,7 @@ class FaceTracker {
 
         // 4. Glossy Highlight Dot
         ctx.beginPath();
-        ctx.arc(-inW * 0.12, -h * 0.75, size * 0.038, 0, Math.PI * 2);
+        ctx.arc(-inW * 0.12, -h * 0.75, Math.max(1, size * 0.038), 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
         ctx.fill();
 
@@ -810,6 +843,7 @@ class FaceTracker {
 
     // Cute whiskers fanning out from cheeks
     drawCatWhiskers(ctx, x, y, length, pointsLeft, baseAngle = 0) {
+        if (!length || length <= 0 || !isFinite(length) || !isFinite(x) || !isFinite(y)) return;
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(baseAngle);
@@ -839,6 +873,7 @@ class FaceTracker {
 
     // Cute little rounded triangle / heart cat nose
     drawCatNose(ctx, x, y, size, angle = 0) {
+        if (!size || size <= 0 || !isFinite(size) || !isFinite(x) || !isFinite(y)) return;
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(angle);
@@ -856,7 +891,7 @@ class FaceTracker {
         // Gloss highlight
         ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
         ctx.beginPath();
-        ctx.arc(-w * 0.15, -h * 0.2, size * 0.08, 0, Math.PI * 2);
+        ctx.arc(-w * 0.15, -h * 0.2, Math.max(1, size * 0.08), 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
@@ -864,6 +899,7 @@ class FaceTracker {
 
     // Cute pastel pink ribbon bow
     drawRibbonBow(ctx, x, y, size) {
+        if (!size || size <= 0 || !isFinite(size) || !isFinite(x) || !isFinite(y)) return;
         ctx.save();
         ctx.translate(x, y);
 
@@ -906,7 +942,7 @@ class FaceTracker {
 
         // Center knot
         ctx.beginPath();
-        ctx.arc(0, 0, size * 0.18, 0, Math.PI * 2);
+        ctx.arc(0, 0, Math.max(1, size * 0.18), 0, Math.PI * 2);
         ctx.fillStyle = '#ffe4e6';
         ctx.fill();
         ctx.strokeStyle = '#ff3377';
