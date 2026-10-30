@@ -48,6 +48,13 @@ const FILTERS = {
         canvasFilter: 'brightness(105%) contrast(102%) saturate(118%)',
         colorTone: 'rgba(255, 180, 205, 0.12)',
         isAR: true
+    },
+    'cat-ears': {
+        name: 'Telinga Kucing 🐱',
+        css: 'brightness(1.06) contrast(1.03) saturate(1.15)',
+        canvasFilter: 'brightness(106%) contrast(103%) saturate(115%)',
+        colorTone: 'rgba(255, 230, 240, 0.09)',
+        isAR: true
     }
 };
 
@@ -65,6 +72,7 @@ class FilterManager {
         }
         if (window.faceTracker) {
             if (FILTERS[filterKey].isAR) {
+                window.faceTracker.setFilterType(filterKey);
                 window.faceTracker.start();
             } else {
                 window.faceTracker.stop();

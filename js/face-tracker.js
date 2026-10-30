@@ -10,8 +10,9 @@ class FaceTracker {
         this.arCtx = null;
         this.animId = null;
         this.enabled = false;
+        this.currentFilterType = 'pink-love';
         
-        // Tracked faces array: [{ x, y, w, h, angle, leftCheek, rightCheek, crownX, crownY }]
+        // Tracked faces array: [{ x, y, w, h, angle, leftCheek, rightCheek, crownX, crownY, nose }]
         this.faces = [];
         
         // Tier 1: MediaPipe
@@ -76,13 +77,18 @@ class FaceTracker {
         }
     }
 
+    setFilterType(type) {
+        this.currentFilterType = type || 'pink-love';
+    }
+
     start() {
         this.enabled = true;
         if (this.arCanvas) {
             this.arCanvas.style.display = 'block';
         }
-        this.faces = [];
-        this.loop();
+        if (!this.animId) {
+            this.loop();
+        }
     }
 
     stop() {
@@ -115,6 +121,7 @@ class FaceTracker {
             let crownY = b.yCenter - b.height * 0.46;
             let leftCheek = null;
             let rightCheek = null;
+            let nosePt = null;
 
             if (lm.length >= 4) {
                 const rEye = lm[0];
@@ -140,6 +147,10 @@ class FaceTracker {
                     x: rEye.x + (rEye.x - nose.x) * 0.4,
                     y: (rEye.y + mouth.y) / 2
                 };
+                nosePt = {
+                    x: nose.x,
+                    y: nose.y
+                };
             }
 
             detected.push({
@@ -151,7 +162,8 @@ class FaceTracker {
                 crownX,
                 crownY,
                 leftCheek,
-                rightCheek
+                rightCheek,
+                nose: nosePt
             });
         });
 
@@ -191,7 +203,8 @@ class FaceTracker {
                             crownX: xc,
                             crownY: yc - h * 0.46,
                             leftCheek: { x: xc + w * 0.26, y: yc + h * 0.12 },
-                            rightCheek: { x: xc - w * 0.26, y: yc + h * 0.12 }
+                            rightCheek: { x: xc - w * 0.26, y: yc + h * 0.12 },
+                            nose: { x: xc, y: yc + h * 0.05 }
                         };
                     });
                 }
@@ -334,7 +347,8 @@ class FaceTracker {
             crownX: b.x,
             crownY: b.y - b.h * 0.46,
             leftCheek: { x: b.x + b.w * 0.26, y: b.y + b.h * 0.12 },
-            rightCheek: { x: b.x - b.w * 0.26, y: b.y + b.h * 0.12 }
+            rightCheek: { x: b.x - b.w * 0.26, y: b.y + b.h * 0.12 },
+            nose: { x: b.x, y: b.y + b.h * 0.05 }
         }));
     }
 
@@ -385,7 +399,11 @@ class FaceTracker {
                     crownX: (f.crownX || f.x) + ((d.crownX || d.x) - (f.crownX || f.x)) * smooth,
                     crownY: (f.crownY || f.y) + ((d.crownY || d.y) - (f.crownY || f.y)) * smooth,
                     leftCheek: d.leftCheek,
-                    rightCheek: d.rightCheek
+                    rightCheek: d.rightCheek,
+                    nose: (f.nose && d.nose) ? {
+                        x: f.nose.x + (d.nose.x - f.nose.x) * smooth,
+                        y: f.nose.y + (d.nose.y - f.nose.y) * smooth
+                    } : (d.nose || null)
                 });
             } else {
                 updated.push({ ...d });
@@ -421,7 +439,7 @@ class FaceTracker {
             const time = now / 1000;
 
             this.faces.forEach((face, idx) => {
-                this.drawPinkLoveFilter(this.arCtx, face, vw, vh, time, idx, isMirrored);
+                this.drawARFilter(this.arCtx, face, vw, vh, time, idx, isMirrored);
             });
         }
 
@@ -583,8 +601,319 @@ class FaceTracker {
         if (!this.enabled || this.faces.length === 0) return;
         const time = Date.now() / 1000;
         this.faces.forEach((face, idx) => {
-            this.drawPinkLoveFilter(targetCtx, face, targetWidth, targetHeight, time, idx, isMirrored);
+            this.drawARFilter(targetCtx, face, targetWidth, targetHeight, time, idx, isMirrored);
         });
+    }
+
+    // Dispatch to selected AR filter
+    drawARFilter(ctx, face, width, height, time, personIdx = 0, isMirrored = false) {
+        if (this.currentFilterType === 'cat-ears') {
+            this.drawCatEarsFilter(ctx, face, width, height, time, personIdx, isMirrored);
+        } else {
+            this.drawPinkLoveFilter(ctx, face, width, height, time, personIdx, isMirrored);
+        }
+    }
+
+    // Render AR Cat Ears filter directly on face locations
+    drawCatEarsFilter(ctx, face, width, height, time, personIdx = 0, isMirrored = false) {
+        ctx.save();
+
+        const rawCrownX = (face.crownX !== undefined) ? face.crownX : face.x;
+        const rawCrownY = (face.crownY !== undefined) ? face.crownY : (face.y - face.h * 0.46);
+
+        const screenCrownX = isMirrored ? (1 - rawCrownX) * width : rawCrownX * width;
+        const screenCrownY = rawCrownY * height;
+
+        const headW = face.w * width;
+        const headH = face.h * height;
+
+        // In mirror mode, tilt angle is negated
+        const tiltAngle = isMirrored ? -face.angle : face.angle;
+
+        // 1. Cat Ears on top of the head
+        ctx.save();
+        ctx.translate(screenCrownX, screenCrownY);
+        ctx.rotate(tiltAngle);
+
+        const earSize = Math.max(34, Math.min(125, headW * 0.44));
+        const earSpacing = headW * 0.35;
+        const earY = -headH * 0.06;
+
+        // Left Cat Ear (tilted slightly outward)
+        this.drawCatEar(ctx, -earSpacing, earY, earSize, -0.32, true, time, personIdx);
+
+        // Right Cat Ear (tilted slightly outward)
+        this.drawCatEar(ctx, earSpacing, earY, earSize, 0.32, false, time, personIdx);
+
+        // Cute sweet pink ribbon bow at base of left ear
+        this.drawRibbonBow(ctx, -earSpacing * 0.95, earY + earSize * 0.08, earSize * 0.38);
+
+        // Sparkle stars around ears
+        const sparkTime = time * 2.2 + personIdx;
+        this.drawSparkle(ctx, -earSpacing * 1.32, earY - earSize * 0.35 + Math.sin(sparkTime) * 3, 6 * (headW / 180), 0.7);
+        this.drawSparkle(ctx, earSpacing * 1.32, earY - earSize * 0.35 + Math.cos(sparkTime) * 3, 6 * (headW / 180), 0.7);
+        this.drawSparkle(ctx, 0, earY - earSize * 0.25 + Math.sin(sparkTime * 1.4) * 4, 5 * (headW / 180), 0.6);
+
+        ctx.restore();
+
+        // 2. Soft Rosy Cheek Blush
+        let leftCheekScreen, rightCheekScreen;
+
+        if (face.leftCheek && face.rightCheek) {
+            if (isMirrored) {
+                leftCheekScreen = { x: (1 - face.leftCheek.x) * width, y: face.leftCheek.y * height };
+                rightCheekScreen = { x: (1 - face.rightCheek.x) * width, y: face.rightCheek.y * height };
+            } else {
+                leftCheekScreen = { x: face.leftCheek.x * width, y: face.leftCheek.y * height };
+                rightCheekScreen = { x: face.rightCheek.x * width, y: face.rightCheek.y * height };
+            }
+        } else {
+            const fx = isMirrored ? (1 - face.x) * width : face.x * width;
+            const fy = face.y * height;
+            const spreadX = headW * 0.28;
+            const spreadY = headH * 0.12;
+            leftCheekScreen = { x: fx + spreadX, y: fy + spreadY };
+            rightCheekScreen = { x: fx - spreadX, y: fy + spreadY };
+        }
+
+        const cheekRadius = Math.max(12, headW * 0.14);
+
+        [leftCheekScreen, rightCheekScreen].forEach(pt => {
+            if (!pt) return;
+            ctx.save();
+            const grad = ctx.createRadialGradient(pt.x, pt.y, 2, pt.x, pt.y, cheekRadius * 1.35);
+            grad.addColorStop(0, 'rgba(255, 140, 180, 0.36)');
+            grad.addColorStop(0.7, 'rgba(255, 185, 208, 0.16)');
+            grad.addColorStop(1, 'rgba(255, 210, 225, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, cheekRadius * 1.35, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+
+        // 3. Cute Cat Whiskers on both cheeks (fanning outwards away from nose)
+        const screenCenterX = isMirrored ? (1 - face.x) * width : face.x * width;
+
+        if (leftCheekScreen) {
+            const pointsLeft = leftCheekScreen.x < screenCenterX;
+            this.drawCatWhiskers(ctx, leftCheekScreen.x, leftCheekScreen.y, headW * 0.28, pointsLeft, tiltAngle);
+        }
+        if (rightCheekScreen) {
+            const pointsLeft = rightCheekScreen.x < screenCenterX;
+            this.drawCatWhiskers(ctx, rightCheekScreen.x, rightCheekScreen.y, headW * 0.28, pointsLeft, tiltAngle);
+        }
+
+        // 4. Cute Little Cat Nose
+        let noseScreen;
+        if (face.nose) {
+            noseScreen = {
+                x: isMirrored ? (1 - face.nose.x) * width : face.nose.x * width,
+                y: face.nose.y * height
+            };
+        } else {
+            noseScreen = {
+                x: screenCenterX,
+                y: face.y * height + headH * 0.04
+            };
+        }
+        this.drawCatNose(ctx, noseScreen.x, noseScreen.y, headW * 0.08, tiltAngle);
+
+        ctx.restore();
+    }
+
+    // High quality vector cat ear with fluffy texture, gradient and inner tufts
+    drawCatEar(ctx, x, y, size, angle, isLeft, time, personIdx = 0) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+
+        // Subtle twitch/bobbing (lively and cute!)
+        const twitchPhase = time * 2.5 + personIdx * 1.5 + (isLeft ? 0 : 0.8);
+        const isTwitching = Math.sin(twitchPhase * 0.7) > 0.88;
+        const twitchAngle = isTwitching ? Math.sin(twitchPhase * 15) * 0.06 : Math.sin(twitchPhase) * 0.015;
+        ctx.rotate(twitchAngle);
+
+        const w = size * 0.88;
+        const h = size * 1.12;
+
+        // Outer ear soft shadow
+        ctx.shadowColor = 'rgba(255, 140, 180, 0.35)';
+        ctx.shadowBlur = size * 0.22;
+        ctx.shadowOffsetY = size * 0.04;
+
+        // 1. Outer Fur Shape
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.48, 0); // Inner base
+        ctx.bezierCurveTo(-w * 0.45, -h * 0.45, -w * 0.22, -h * 0.96, 0, -h); // Tip
+        ctx.bezierCurveTo(w * 0.22, -h * 0.96, w * 0.52, -h * 0.45, w * 0.48, 0); // Outer base
+        ctx.quadraticCurveTo(0, h * 0.08, -w * 0.48, 0);
+        ctx.closePath();
+
+        const outerGrad = ctx.createLinearGradient(0, -h, 0, 0);
+        outerGrad.addColorStop(0, '#ffffff');
+        outerGrad.addColorStop(0.7, '#fff5f8');
+        outerGrad.addColorStop(1, '#fed7e2');
+        ctx.fillStyle = outerGrad;
+        ctx.fill();
+
+        ctx.strokeStyle = '#f472b6';
+        ctx.lineWidth = Math.max(1.8, size * 0.038);
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        ctx.shadowColor = 'transparent';
+
+        // 2. Inner Ear (Rosy Pink gradient)
+        const inW = w * 0.62;
+        const inH = h * 0.72;
+        ctx.beginPath();
+        ctx.moveTo(-inW * 0.42, -h * 0.06);
+        ctx.bezierCurveTo(-inW * 0.38, -h * 0.4, -inW * 0.16, -h * 0.82, 0, -h * 0.88);
+        ctx.bezierCurveTo(inW * 0.16, -h * 0.82, inW * 0.42, -h * 0.4, inW * 0.42, -h * 0.06);
+        ctx.closePath();
+
+        const innerGrad = ctx.createLinearGradient(0, -h * 0.88, 0, -h * 0.06);
+        innerGrad.addColorStop(0, '#ff69a0');
+        innerGrad.addColorStop(0.6, '#ffa5c8');
+        innerGrad.addColorStop(1, '#ffd6e4');
+        ctx.fillStyle = innerGrad;
+        ctx.fill();
+
+        // 3. Cute White Ear Fluff Tufts (3 fluffy tufts near base inside ear)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+        const tuftDir = isLeft ? 1 : -1;
+        
+        ctx.beginPath();
+        // Lower tuft
+        ctx.moveTo(-tuftDir * inW * 0.3, -h * 0.12);
+        ctx.quadraticCurveTo(0, -h * 0.28, tuftDir * inW * 0.35, -h * 0.24);
+        ctx.quadraticCurveTo(0, -h * 0.18, -tuftDir * inW * 0.3, -h * 0.12);
+        // Middle tuft
+        ctx.moveTo(-tuftDir * inW * 0.25, -h * 0.22);
+        ctx.quadraticCurveTo(0, -h * 0.42, tuftDir * inW * 0.42, -h * 0.38);
+        ctx.quadraticCurveTo(0, -h * 0.30, -tuftDir * inW * 0.25, -h * 0.22);
+        // Upper small tuft
+        ctx.moveTo(-tuftDir * inW * 0.18, -h * 0.34);
+        ctx.quadraticCurveTo(0, -h * 0.52, tuftDir * inW * 0.32, -h * 0.48);
+        ctx.quadraticCurveTo(0, -h * 0.40, -tuftDir * inW * 0.18, -h * 0.34);
+        ctx.fill();
+
+        // 4. Glossy Highlight Dot
+        ctx.beginPath();
+        ctx.arc(-inW * 0.12, -h * 0.75, size * 0.038, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    // Cute whiskers fanning out from cheeks
+    drawCatWhiskers(ctx, x, y, length, pointsLeft, baseAngle = 0) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(baseAngle);
+
+        const dir = pointsLeft ? -1 : 1;
+        const whiskerAngles = [-0.18, 0, 0.18]; // 3 whiskers: upper, middle, lower
+
+        ctx.strokeStyle = 'rgba(75, 65, 80, 0.65)'; // Soft charcoal / plum
+        ctx.lineWidth = Math.max(1.8, length * 0.045);
+        ctx.lineCap = 'round';
+
+        whiskerAngles.forEach(ang => {
+            ctx.beginPath();
+            const startX = dir * (length * 0.18);
+            const startY = 0;
+            const endX = dir * length;
+            const endY = Math.tan(ang) * (length * 0.85);
+            const cpX = (startX + endX) * 0.5;
+            const cpY = endY * 0.5 + (pointsLeft ? 1.5 : -1.5);
+            ctx.moveTo(startX, startY);
+            ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+            ctx.stroke();
+        });
+
+        ctx.restore();
+    }
+
+    // Cute little rounded triangle / heart cat nose
+    drawCatNose(ctx, x, y, size, angle = 0) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.fillStyle = '#ff6599';
+        ctx.beginPath();
+        const w = size * 0.85;
+        const h = size * 0.65;
+        ctx.moveTo(0, h * 0.5); // bottom tip
+        ctx.quadraticCurveTo(-w * 0.5, h * 0.15, -w * 0.5, -h * 0.3); // left top
+        ctx.quadraticCurveTo(0, -h * 0.52, w * 0.5, -h * 0.3); // top curve
+        ctx.quadraticCurveTo(w * 0.5, h * 0.15, 0, h * 0.5); // right back to bottom
+        ctx.closePath();
+        ctx.fill();
+
+        // Gloss highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.beginPath();
+        ctx.arc(-w * 0.15, -h * 0.2, size * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    // Cute pastel pink ribbon bow
+    drawRibbonBow(ctx, x, y, size) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        const w = size;
+        const h = size * 0.6;
+
+        ctx.shadowColor = 'rgba(244, 63, 94, 0.3)';
+        ctx.shadowBlur = size * 0.15;
+
+        // Left loop
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(-w * 0.7, -h * 0.8, -w * 0.9, h * 0.8, 0, 0);
+        ctx.fillStyle = '#ff6ca3';
+        ctx.fill();
+
+        // Right loop
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(w * 0.7, -h * 0.8, w * 0.9, h * 0.8, 0, 0);
+        ctx.fillStyle = '#ff6ca3';
+        ctx.fill();
+
+        // Ribbon tails
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.1, h * 0.1);
+        ctx.lineTo(-w * 0.45, h * 0.9);
+        ctx.lineTo(-w * 0.25, h * 0.8);
+        ctx.lineTo(0, h * 0.2);
+        ctx.fillStyle = '#ff5192';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(w * 0.1, h * 0.1);
+        ctx.lineTo(w * 0.45, h * 0.9);
+        ctx.lineTo(w * 0.25, h * 0.8);
+        ctx.lineTo(0, h * 0.2);
+        ctx.fillStyle = '#ff5192';
+        ctx.fill();
+
+        // Center knot
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.18, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffe4e6';
+        ctx.fill();
+        ctx.strokeStyle = '#ff3377';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        ctx.restore();
     }
 }
 
