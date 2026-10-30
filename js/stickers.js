@@ -45,6 +45,32 @@ class StickerManager {
         return newSticker;
     }
 
+    addCustomImage(imgElement, containerWidth = 400, containerHeight = 1200) {
+        const nw = imgElement.naturalWidth || imgElement.width || 100;
+        const nh = imgElement.naturalHeight || imgElement.height || 100;
+        const ar = nw / nh;
+
+        // Base size scaled nicely to strip dimensions
+        const baseSize = Math.max(80, Math.min(220, containerWidth * 0.38));
+
+        const newSticker = {
+            id: 'stk_img_' + Date.now() + Math.random().toString(36).substr(2, 4),
+            def: {
+                type: 'image',
+                img: imgElement,
+                aspectRatio: ar,
+                label: 'Custom Photo / PNG'
+            },
+            x: containerWidth * 0.5 + (Math.random() * 40 - 20),
+            y: containerHeight * 0.45 + (Math.random() * 60 - 30),
+            size: baseSize,
+            rotation: 0
+        };
+        this.stickers.push(newSticker);
+        this.selectedStickerIndex = this.stickers.length - 1;
+        return newSticker;
+    }
+
     removeSelected() {
         if (this.selectedStickerIndex >= 0 && this.selectedStickerIndex < this.stickers.length) {
             this.stickers.splice(this.selectedStickerIndex, 1);
@@ -68,7 +94,7 @@ class StickerManager {
     scaleSelected(scaleMultiplier) {
         if (this.selectedStickerIndex >= 0) {
             const stk = this.stickers[this.selectedStickerIndex];
-            stk.size = Math.max(24, Math.min(220, stk.size * scaleMultiplier));
+            stk.size = Math.max(20, Math.min(600, stk.size * scaleMultiplier));
         }
     }
 
@@ -124,15 +150,36 @@ class StickerManager {
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(text, 0, 0);
+            } else if (stk.def.type === 'image' && stk.def.img) {
+                const ar = stk.def.aspectRatio || 1;
+                const drawW = ar >= 1 ? size : size * ar;
+                const drawH = ar >= 1 ? size / ar : size;
+
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+                ctx.shadowBlur = 8 * scale;
+                ctx.shadowOffsetY = 4 * scale;
+                ctx.drawImage(stk.def.img, -drawW / 2, -drawH / 2, drawW, drawH);
             }
 
             // If selected, draw delicate bounding indicator
             if (index === this.selectedStickerIndex && scale === 1) {
                 ctx.strokeStyle = '#f43f5e';
-                ctx.lineWidth = 1.5;
-                ctx.setLineDash([4, 4]);
-                const boxRadius = size * 0.65;
-                ctx.strokeRect(-boxRadius, -boxRadius, boxRadius * 2, boxRadius * 2);
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 4]);
+
+                if (stk.def.type === 'image') {
+                    const ar = stk.def.aspectRatio || 1;
+                    const drawW = ar >= 1 ? size : size * ar;
+                    const drawH = ar >= 1 ? size / ar : size;
+                    ctx.strokeRect(-drawW / 2 - 4, -drawH / 2 - 4, drawW + 8, drawH + 8);
+                } else if (stk.def.type === 'badge') {
+                    const boxRadius = size * 0.7;
+                    ctx.strokeRect(-boxRadius, -size * 0.25, boxRadius * 2, size * 0.5);
+                } else {
+                    const boxRadius = size * 0.65;
+                    ctx.strokeRect(-boxRadius, -boxRadius, boxRadius * 2, boxRadius * 2);
+                }
+
                 ctx.setLineDash([]);
             }
 

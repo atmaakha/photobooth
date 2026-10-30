@@ -58,7 +58,7 @@
             updateDarkUI(isDark);
         });
     </script>
-    <link rel="stylesheet" href="css/style.css?v=2.4">
+    <link rel="stylesheet" href="css/style.css?v=2.5">
 </head>
 
 <body class="text-slate-800 antialiased selection:bg-rose-200">
@@ -535,6 +535,33 @@
                                 Bersihkan Semua Stiker
                             </button>
                         </div>
+
+                        <!-- Custom Image / PNG Upload Decorator -->
+                        <div class="mt-2.5 pt-2 border-t border-dashed border-rose-200/70 dark:border-slate-700/60">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>🖼️</span> Hias dengan Foto / PNG Sendiri
+                                </label>
+                                <span class="text-[9px] text-slate-400">PNG transparan / JPG</span>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <label for="inputCustomSticker"
+                                    class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-dashed border-rose-300 dark:border-slate-600 bg-rose-50/60 dark:bg-slate-800/60 hover:bg-rose-100/70 dark:hover:bg-slate-700/60 text-rose-600 dark:text-rose-300 text-xs font-semibold cursor-pointer transition active:scale-[0.99] select-none shadow-sm">
+                                    <span class="text-sm">📁</span>
+                                    <span>Pilih File Foto / PNG</span>
+                                    <input type="file" id="inputCustomSticker" accept="image/png, image/jpeg, image/webp, image/gif" class="hidden">
+                                </label>
+                            </div>
+
+                            <!-- Thumbnails of uploaded custom stickers so user can re-click them anytime -->
+                            <div id="customStickersContainer" class="hidden flex items-center gap-2 mt-2 p-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/50 overflow-x-auto custom-scroll">
+                                <span class="text-[10px] text-slate-400 font-medium whitespace-nowrap pl-1">Tersimpan:</span>
+                                <div id="customStickersList" class="flex items-center gap-1.5">
+                                    <!-- Dynamic uploaded sticker buttons -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -555,13 +582,13 @@
         crossorigin="anonymous"></script>
 
     <!-- Scripts with Cache-Busting -->
-    <script src="js/audio.js?v=2.4"></script>
-    <script src="js/filters.js?v=2.4"></script>
-    <script src="js/face-tracker.js?v=2.4"></script>
-    <script src="js/camera.js?v=2.4"></script>
-    <script src="js/stickers.js?v=2.4"></script>
-    <script src="js/canvas-renderer.js?v=2.4"></script>
-    <script src="js/app.js?v=2.4"></script>
+    <script src="js/audio.js?v=2.5"></script>
+    <script src="js/filters.js?v=2.5"></script>
+    <script src="js/face-tracker.js?v=2.5"></script>
+    <script src="js/camera.js?v=2.5"></script>
+    <script src="js/stickers.js?v=2.5"></script>
+    <script src="js/canvas-renderer.js?v=2.5"></script>
+    <script src="js/app.js?v=2.5"></script>
 </body>
 
 </html>

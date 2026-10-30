@@ -384,6 +384,56 @@ class PhotoboothApp {
         if (btnScaleDownStk) btnScaleDownStk.addEventListener('click', () => { this.stickerManager.scaleSelected(0.85); this.renderCanvas(); });
         if (btnDeleteStk) btnDeleteStk.addEventListener('click', () => { this.stickerManager.removeSelected(); this.renderCanvas(); this.updateStickerActionButtons(); });
         if (btnClearAllStk) btnClearAllStk.addEventListener('click', () => { this.stickerManager.clearAll(); this.renderCanvas(); this.updateStickerActionButtons(); });
+
+        // Custom Image / PNG Upload Decorator
+        const fileInput = document.getElementById('inputCustomSticker');
+        const customContainer = document.getElementById('customStickersContainer');
+        const customList = document.getElementById('customStickersList');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+
+                if (!file.type.startsWith('image/')) {
+                    this.showToast('Harap pilih file gambar (PNG / JPG / WEBP)', 'warning');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const dims = this.renderer.getLayoutDimensions(this.renderer.layout, 1);
+                        this.stickerManager.addCustomImage(img, dims.width, dims.height);
+                        this.renderCanvas();
+                        this.updateStickerActionButtons();
+                        this.showToast('Foto/PNG berhasil ditempel ke strip! 🎨', 'success');
+
+                        // Add to custom stickers list thumbnail chips
+                        if (customContainer && customList) {
+                            customContainer.classList.remove('hidden');
+                            const thumbBtn = document.createElement('button');
+                            thumbBtn.type = 'button';
+                            thumbBtn.className = 'w-10 h-10 rounded-xl bg-white dark:bg-slate-700 border border-rose-200 dark:border-slate-600 p-0.5 overflow-hidden flex items-center justify-center hover:scale-110 active:scale-95 transition cursor-pointer shadow-sm flex-shrink-0';
+                            thumbBtn.title = 'Klik untuk tempel lagi';
+                            thumbBtn.innerHTML = `<img src="${event.target.result}" class="w-full h-full object-contain pointer-events-none rounded-lg" alt="sticker">`;
+                            thumbBtn.addEventListener('click', () => {
+                                const currentDims = this.renderer.getLayoutDimensions(this.renderer.layout, 1);
+                                this.stickerManager.addCustomImage(img, currentDims.width, currentDims.height);
+                                this.renderCanvas();
+                                this.updateStickerActionButtons();
+                                this.showToast('Foto ditempel lagi ke strip! ✨');
+                            });
+                            customList.appendChild(thumbBtn);
+                        }
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+                fileInput.value = '';
+            });
+        }
     }
 
     updateStickerActionButtons() {
@@ -418,8 +468,25 @@ class PhotoboothApp {
                 const stk = this.stickerManager.stickers[i];
                 const dx = pos.x - stk.x;
                 const dy = pos.y - stk.y;
-                const dist = Math.hypot(dx, dy);
-                if (dist <= stk.size * 0.7) {
+                const angle = -stk.rotation;
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+                const localX = dx * cos - dy * sin;
+                const localY = dx * sin + dy * cos;
+
+                let hit = false;
+                if (stk.def.type === 'image') {
+                    const ar = stk.def.aspectRatio || 1;
+                    const w = ar >= 1 ? stk.size : stk.size * ar;
+                    const h = ar >= 1 ? stk.size / ar : stk.size;
+                    hit = Math.abs(localX) <= (w / 2 + 12) && Math.abs(localY) <= (h / 2 + 12);
+                } else if (stk.def.type === 'badge') {
+                    hit = Math.abs(localX) <= (stk.size * 0.8) && Math.abs(localY) <= (stk.size * 0.35);
+                } else {
+                    hit = Math.hypot(dx, dy) <= stk.size * 0.7;
+                }
+
+                if (hit) {
                     isDown = true;
                     activeIndex = i;
                     this.stickerManager.selectedStickerIndex = i;
